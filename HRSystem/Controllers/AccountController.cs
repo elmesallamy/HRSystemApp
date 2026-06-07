@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System; // أضف هذا لـ DateTime
 
 namespace HRSystem.Controllers
 {
@@ -35,6 +36,11 @@ namespace HRSystem.Controllers
                 var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
                 if (result.Succeeded)
                 {
+                    // ✅ تحسين: توجيه حسب الدور
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    {
+                        return RedirectToAction("Dashboard", "Home");
+                    }
                     return RedirectToAction("Index", "Home");
                 }
             }
@@ -48,13 +54,11 @@ namespace HRSystem.Controllers
             return RedirectToAction("Login");
         }
 
-        // ========== أضف هذه الدالة الجديدة هنا ==========
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
-        // ==============================================
 
         [HttpPost]
         public async Task<IActionResult> Register(string email, string password, string name, string position)
@@ -91,6 +95,9 @@ namespace HRSystem.Controllers
 
                 // تسجيل الدخول تلقائياً بعد التسجيل
                 await _signInManager.SignInAsync(user, isPersistent: false);
+
+                // ✅ تحسين: استخدام TempData بدلاً من ViewBag
+                TempData["Success"] = "✅ تم إنشاء حسابك بنجاح!";
 
                 return RedirectToAction("Index", "Home");
             }

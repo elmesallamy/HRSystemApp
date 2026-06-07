@@ -18,12 +18,10 @@ namespace HRSystem.Controllers
             _currentUserService = currentUserService;
         }
 
-        // عرض سجلات الحضور
+        // ✅ عرض سجلات الحضور (تم التعديل لاستخدام الخدمة)
         public async Task<IActionResult> Index()
         {
-            var userEmail = User.Identity.Name;
             var isAdmin = User.IsInRole("Admin");
-
             List<Attendance> attendances;
 
             if (isAdmin)
@@ -35,7 +33,8 @@ namespace HRSystem.Controllers
             }
             else
             {
-                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+                // ✅ استخدام الخدمة بدلاً من User.Identity.Name مباشرة
+                var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
                 if (employee == null)
                 {

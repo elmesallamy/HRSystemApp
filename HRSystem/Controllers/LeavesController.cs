@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HRSystem.Models;
-using System.Security.Claims;
+using HRSystem.Services; // ✅ أضف هذا الـ using
 
 namespace HRSystem.Controllers
 {
@@ -10,10 +10,12 @@ namespace HRSystem.Controllers
     public class LeavesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService; // ✅ أضف هذا السطر
 
-        public LeavesController(ApplicationDbContext context)
+        public LeavesController(ApplicationDbContext context, ICurrentUserService currentUserService) // ✅ عدل الكونستركتر
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         // عرض كل طلبات الإجازات (للمدير)
@@ -29,8 +31,8 @@ namespace HRSystem.Controllers
         // عرض إجازاتي (للموظف العادي)
         public async Task<IActionResult> MyLeaves()
         {
-            var userEmail = User.Identity.Name;
-            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+            // ✅ استخدام الخدمة بدلاً من الكود المكرر
+            var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
             if (employee == null)
             {
@@ -48,8 +50,8 @@ namespace HRSystem.Controllers
         // طلب إجازة جديد
         public async Task<IActionResult> Create()
         {
-            var userEmail = User.Identity.Name;
-            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+            // ✅ استخدام الخدمة
+            var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
             if (employee == null)
             {
@@ -64,8 +66,8 @@ namespace HRSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("StartDate,EndDate,LeaveType,Reason")] Leave leave)
         {
-            var userEmail = User.Identity.Name;
-            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+            // ✅ استخدام الخدمة
+            var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
             if (employee == null)
             {
@@ -80,14 +82,16 @@ namespace HRSystem.Controllers
 
                 _context.Add(leave);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "✅ تم إرسال طلب الإجازة بنجاح";
                 return RedirectToAction(nameof(MyLeaves));
             }
 
             return View(leave);
         }
 
-        // موافقة على الإجازة (للمدير فقط)
+        // ✅ إضافة صلاحية المدير
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Approve(int id)
         {
             var leave = await _context.Leaves.FindAsync(id);
@@ -97,12 +101,14 @@ namespace HRSystem.Controllers
                 leave.ApprovedBy = User.Identity.Name;
                 leave.ApprovalDate = DateTime.Now;
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "✅ تم قبول طلب الإجازة";
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // رفض الإجازة (للمدير فقط)
+        // ✅ إضافة صلاحية المدير
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reject(int id, string rejectionReason)
         {
             var leave = await _context.Leaves.FindAsync(id);
@@ -111,22 +117,11 @@ namespace HRSystem.Controllers
                 leave.Status = "مرفوضة";
                 leave.RejectionReason = rejectionReason;
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "❌ تم رفض طلب الإجازة";
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // أضف هذه الدالة الجديدة للرفض بطريقة GET (بديل)
-        [HttpGet]
-        public async Task<IActionResult> RejectGet(int id, string rejectionReason)
-        {
-            var leave = await _context.Leaves.FindAsync(id);
-            if (leave != null)
-            {
-                leave.Status = "مرفوضة";
-                leave.RejectionReason = rejectionReason ?? "بدون سبب";
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
+        // ❌ تم حذف دالة RejectGet نهائياً (غير آمنة وغير ضرورية)
     }
 }

@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HRSystem.Controllers
+// ❌ تم حذف السطر المكرر: namespace HRSystem.Controllers
 
-    namespace HRSystem.Controllers
+namespace HRSystem.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class EmployeesController : Controller
@@ -53,8 +53,6 @@ namespace HRSystem.Controllers
         }
 
         // POST: Employees/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Email,Phone,Position,Department,HireDate,Salary,IsActive")] Employee employee)
@@ -63,6 +61,7 @@ namespace HRSystem.Controllers
             {
                 _context.Add(employee);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "✅ تم إضافة الموظف بنجاح";
                 return RedirectToAction(nameof(Index));
             }
             return View(employee);
@@ -85,8 +84,6 @@ namespace HRSystem.Controllers
         }
 
         // POST: Employees/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Email,Phone,Position,Department,HireDate,Salary,IsActive")] Employee employee)
@@ -102,6 +99,7 @@ namespace HRSystem.Controllers
                 {
                     _context.Update(employee);
                     await _context.SaveChangesAsync();
+                    TempData["Success"] = "✅ تم تعديل بيانات الموظف بنجاح";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -149,6 +147,7 @@ namespace HRSystem.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["Success"] = "✅ تم حذف الموظف بنجاح";
             return RedirectToAction(nameof(Index));
         }
 
