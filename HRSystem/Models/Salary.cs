@@ -16,28 +16,31 @@ namespace HRSystem.Models
         public virtual Employee? Employee { get; set; }
 
         [Required]
-        public int Month { get; set; }  // 1-12
+        public int Month { get; set; }
 
         [Required]
         public int Year { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal BasicSalary { get; set; }  // الراتب الأساسي
+        public decimal BasicSalary { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Allowances { get; set; } = 0;  // بدلات
+        public decimal Allowances { get; set; } = 0;
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Deductions { get; set; } = 0;  // خصومات
+        public decimal Deductions { get; set; } = 0;
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal NetSalary { get; set; }  // الصافي
+        public decimal NetSalary { get; set; }
 
-        public int AbsentDays { get; set; } = 0;  // أيام الغياب
-        public int LateDays { get; set; } = 0;   // أيام التأخير
+        // ✅ تأكد إن فيه قيمة افتراضية
+        public int AbsentDays { get; set; } = 0;
 
-        public bool IsPaid { get; set; } = false;  // هل تم الصرف؟
-        public DateTime? PaidDate { get; set; }    // تاريخ الصرف
+        // ✅ تأكد إن فيه قيمة افتراضية
+        public int LateDays { get; set; } = 0;
+
+        public bool IsPaid { get; set; } = false;
+        public DateTime? PaidDate { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }

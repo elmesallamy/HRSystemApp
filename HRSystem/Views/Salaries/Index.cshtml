@@ -62,9 +62,10 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <form method="post" asp-action="CalculateSalaries">
+                        @Html.AntiForgeryToken()
                         <input type="hidden" name="month" value="@currentMonth" />
                         <input type="hidden" name="year" value="@currentYear" />
-                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('سيتم حساب الرواتب بناءً على سجلات الحضور. استمرار؟')">
+                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('سيتم حساب الرواتب...')">
                             <i class="fas fa-calculator me-1"></i> حساب الرواتب
                         </button>
                     </form>
