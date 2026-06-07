@@ -1,20 +1,17 @@
 ﻿using HRSystem.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using System; // أضف هذا لـ DateTime
 
 namespace HRSystem.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ApplicationDbContext context)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -31,19 +28,27 @@ namespace HRSystem.Controllers
         public async Task<IActionResult> Login(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
+
             if (user != null)
             {
+                // ✅ التحقق: هل الحساب مفعل من الأدمن؟
+                if (!user.IsApproved)
+                {
+                    ViewBag.Error = "⏳ حسابك قيد المراجعة. سيتم تفعيله من قبل المدير قريباً.";
+                    return View();
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
                 if (result.Succeeded)
                 {
-                    // ✅ تحسين: توجيه حسب الدور
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
-                        return RedirectToAction("Dashboard", "Home");
+                        return RedirectToAction("Index", "Home");
                     }
                     return RedirectToAction("Index", "Home");
                 }
             }
+
             ViewBag.Error = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
             return View();
         }
@@ -59,16 +64,37 @@ namespace HRSystem.Controllers
         {
             return View();
         }
-
         [HttpPost]
-        public async Task<IActionResult> Register(string email, string password, string name, string position)
+        public async Task<IActionResult> Register(string email, string password, string fullName, string position)
         {
+            // ✅ التحقق من البيانات
+            if (string.IsNullOrEmpty(fullName))
+            {
+                ViewBag.Error = "الاسم كاملاً مطلوب";
+                return View();
+            }
+
+            if (string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "البريد الإلكتروني مطلوب";
+                return View();
+            }
+
+            if (string.IsNullOrEmpty(password))
+            {
+                ViewBag.Error = "كلمة المرور مطلوبة";
+                return View();
+            }
+
             // إنشاء مستخدم جديد
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = email,
                 Email = email,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                IsApproved = false,
+                FullName = fullName,
+                RegisteredAt = DateTime.Now
             };
 
             var result = await _userManager.CreateAsync(user, password);
@@ -81,27 +107,26 @@ namespace HRSystem.Controllers
                 // إنشاء موظف في جدول Employees
                 var employee = new Employee
                 {
-                    Name = name,
+                    Name = fullName,
                     Email = email,
-                    Position = position,
+                    Position = position ?? "غير محدد",
                     Department = "عام",
                     HireDate = DateTime.Today,
                     Salary = 0,
-                    IsActive = true,
+                    IsActive = false,
                     Phone = "غير مدخل"
                 };
                 _context.Employees.Add(employee);
                 await _context.SaveChangesAsync();
 
-                // تسجيل الدخول تلقائياً بعد التسجيل
-                await _signInManager.SignInAsync(user, isPersistent: false);
+                // ✅ تخزين رسالة النجاح
+                TempData["Success"] = "✅ تم تسجيل طلبك بنجاح. سيتم تفعيل حسابك من قبل المدير.";
 
-                // ✅ تحسين: استخدام TempData بدلاً من ViewBag
-                TempData["Success"] = "✅ تم إنشاء حسابك بنجاح!";
-
-                return RedirectToAction("Index", "Home");
+                // ✅ تحويل المستخدم لصفحة الدخول (مهم جداً)
+                return RedirectToAction("Login");
             }
 
+            // ✅ هذا السطر يشتغل فقط لو فشل التسجيل
             ViewBag.Error = "حدث خطأ: " + string.Join(", ", result.Errors.Select(e => e.Description));
             return View();
         }

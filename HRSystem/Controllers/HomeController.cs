@@ -1,18 +1,21 @@
-using HRSystem.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using HRSystem.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HRSystem.Controllers
 {
     [Authorize]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -20,15 +23,35 @@ namespace HRSystem.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        // ✅ أضف هذه الدالة
+        public async Task<IActionResult> Dashboard()
         {
+            // عدد الموظفين
+            var totalEmployees = await _context.Employees.CountAsync();
+
+            // الحضور اليوم
+            var today = DateTime.Today;
+            var todayAttendance = await _context.Attendances
+                .CountAsync(a => a.Date == today && a.IsPresent == true);
+
+            // الإجازات المعلقة
+            var pendingLeaves = await _context.Leaves
+                .CountAsync(l => l.Status == "قيد الانتظار");
+
+            // عدد الموظفين النشطين
+            var activeEmployees = await _context.Employees.CountAsync(e => e.IsActive == true);
+
+            ViewBag.TotalEmployees = totalEmployees;
+            ViewBag.TodayAttendance = todayAttendance;
+            ViewBag.PendingLeaves = pendingLeaves;
+            ViewBag.ActiveEmployees = activeEmployees;
+
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Privacy()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
     }
 }

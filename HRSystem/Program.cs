@@ -1,25 +1,26 @@
-﻿using HRSystem.Models;
-using HRSystem.Services;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using HRSystem.Models;
+using HRSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// إضافة خدمات MVC
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// تسجيل قاعدة البيانات
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// إضافة نظام تسجيل الدخول
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+// ← غيرنا الـ User type لـ ApplicationUser
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// تسجيل الخدمات
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-// تعديل إعدادات كلمة المرور (عشان تكون أسهل في البداية)
+
+// إعدادات كلمة المرور (مؤقتة للتجربة)
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
@@ -27,6 +28,10 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
+
+    // ← إعدادات تسجيل الدخول
+    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedEmail = false;
 });
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -38,7 +43,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-// إنشاء الأدوار والمستخدم admin تلقائياً
+// ← إنشاء الأدمن الأول والمستخدمين
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -55,8 +60,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.UseAuthentication();  // مهم جداً - تسجيل الدخول
-app.UseAuthorization();   // مهم جداً - الصلاحيات
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

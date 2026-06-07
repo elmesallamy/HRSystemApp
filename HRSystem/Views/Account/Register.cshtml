@@ -1,6 +1,15 @@
 ﻿@{
     Layout = null;
 }
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
 
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
@@ -14,6 +23,7 @@
             height: 100vh;
             display: flex;
             align-items: center;
+            overflow: hidden;
             justify-content: center;
         }
 
@@ -32,6 +42,10 @@
             width: 100%;
             padding: 12px;
         }
+
+        .text-danger {
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -43,16 +57,15 @@
             <div class="alert alert-danger">@ViewBag.Error</div>
         }
 
-        @if (ViewBag.Message != null)
+        @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success">@ViewBag.Message</div>
+            <div class="alert alert-success">@TempData["Success"]</div>
         }
 
-        <form method="post" action="/Account/Register">
-            <!-- action واضحة -->
+        <form method="post">
             <div class="mb-3">
                 <label class="form-label">الاسم كاملاً</label>
-                <input type="text" name="name" class="form-control" required>
+                <input type="text" name="fullName" class="form-control" required>
             </div>
             <div class="mb-3">
                 <label class="form-label">البريد الإلكتروني</label>

@@ -8,35 +8,65 @@ namespace HRSystem.Models
         public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // إنشاء دور Admin
-            string adminRole = "Admin";
-            string employeeRole = "Employee";
+            // إنشاء الأدوار
+            string[] roles = { "Admin", "Employee" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                    await roleManager.CreateAsync(new IdentityRole(role));
+            }
 
-            if (!await roleManager.RoleExistsAsync(adminRole))
-                await roleManager.CreateAsync(new IdentityRole(adminRole));
-
-            if (!await roleManager.RoleExistsAsync(employeeRole))
-                await roleManager.CreateAsync(new IdentityRole(employeeRole));
-
-            // إنشاء المستخدم admin
+            // إنشاء الأدمن الوحيد (لو مش موجود)
             var adminEmail = "admin@hrsystem.com";
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
-                adminUser = new IdentityUser
+                adminUser = new ApplicationUser
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    IsApproved = true,      // ← لازم يكون true
+                    FullName = "مدير النظام",
+                    RegisteredAt = DateTime.Now,
+                    ApprovedAt = DateTime.Now,
+                    ApprovedBy = "System"
                 };
 
                 var result = await userManager.CreateAsync(adminUser, "Admin123");
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(adminUser, adminRole);
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+
+                    // إنشاء Employee record للأدمن
+                    var adminEmployee = new Employee
+                    {
+                        Name = "مدير النظام",
+                        Email = adminEmail,
+                        Position = "مدير",
+                        Department = "الإدارة",
+                        HireDate = DateTime.Today,
+                        Salary = 0,
+                        IsActive = true,
+                        Phone = "غير مدخل"
+                    };
+                    context.Employees.Add(adminEmployee);
+                    await context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                // ✅ لو الأدمن موجود لكن مش مفعل، فعله
+                if (!adminUser.IsApproved)
+                {
+                    adminUser.IsApproved = true;
+                    adminUser.ApprovedBy = "System";
+                    adminUser.ApprovedAt = DateTime.Now;
+                    await userManager.UpdateAsync(adminUser);
                 }
             }
         }

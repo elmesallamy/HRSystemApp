@@ -2,6 +2,11 @@
     Layout = null;
 }
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -16,7 +21,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
+
         .login-card {
             background: white;
             border-radius: 15px;
@@ -25,11 +34,13 @@
             max-width: 400px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
-        .login-card h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-        }
+
+            .login-card h2 {
+                text-align: center;
+                margin-bottom: 30px;
+                color: #333;
+            }
+
         .btn-login {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -38,10 +49,11 @@
             font-size: 16px;
             font-weight: bold;
         }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
     </style>
 </head>
 <body>
