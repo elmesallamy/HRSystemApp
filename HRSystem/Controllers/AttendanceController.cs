@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HRSystem.Models;
-using System.Security.Claims;
+using HRSystem.Services;
 
 namespace HRSystem.Controllers
 {
@@ -10,31 +10,58 @@ namespace HRSystem.Controllers
     public class AttendanceController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AttendanceController(ApplicationDbContext context)
+        public AttendanceController(ApplicationDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
-        // عرض كل سجلات الحضور
+        // عرض سجلات الحضور
         public async Task<IActionResult> Index()
         {
-            var attendances = await _context.Attendances
-                .Include(a => a.Employee)
-                .OrderByDescending(a => a.Date)
-                .ToListAsync();
+            var userEmail = User.Identity.Name;
+            var isAdmin = User.IsInRole("Admin");
+
+            List<Attendance> attendances;
+
+            if (isAdmin)
+            {
+                attendances = await _context.Attendances
+                    .Include(a => a.Employee)
+                    .OrderByDescending(a => a.Date)
+                    .ToListAsync();
+            }
+            else
+            {
+                var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+
+                if (employee == null)
+                {
+                    TempData["Error"] = "لم يتم العثور على بيانات الموظف";
+                    return View(new List<Attendance>());
+                }
+
+                attendances = await _context.Attendances
+                    .Include(a => a.Employee)
+                    .Where(a => a.EmployeeId == employee.Id)
+                    .OrderByDescending(a => a.Date)
+                    .ToListAsync();
+            }
+
             return View(attendances);
         }
 
         // تسجيل حضور اليوم
         public async Task<IActionResult> CheckIn()
         {
-            var userEmail = User.Identity.Name;
-            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+            var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
             if (employee == null)
             {
-                return RedirectToAction("Index", "Employees");
+                TempData["Error"] = "لم يتم العثور على بيانات الموظف";
+                return RedirectToAction("Index");
             }
 
             var today = DateTime.Today;
@@ -53,11 +80,11 @@ namespace HRSystem.Controllers
                 };
                 _context.Attendances.Add(attendance);
                 await _context.SaveChangesAsync();
-                ViewBag.Message = "تم تسجيل الحضور بنجاح";
+                TempData["Success"] = "✅ تم تسجيل الحضور بنجاح";
             }
             else
             {
-                ViewBag.Message = "تم تسجيل الحضور مسبقاً اليوم";
+                TempData["Warning"] = "⚠️ تم تسجيل الحضور مسبقاً اليوم";
             }
 
             return RedirectToAction("Index");
@@ -66,12 +93,12 @@ namespace HRSystem.Controllers
         // تسجيل انصراف
         public async Task<IActionResult> CheckOut()
         {
-            var userEmail = User.Identity.Name;
-            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
+            var employee = await _currentUserService.GetCurrentEmployeeAsync();
 
             if (employee == null)
             {
-                return RedirectToAction("Index", "Employees");
+                TempData["Error"] = "لم يتم العثور على بيانات الموظف";
+                return RedirectToAction("Index");
             }
 
             var today = DateTime.Today;
@@ -81,35 +108,44 @@ namespace HRSystem.Controllers
             if (attendance != null && attendance.CheckOutTime == null)
             {
                 attendance.CheckOutTime = DateTime.Now;
+
+                if (attendance.CheckInTime.HasValue)
+                {
+                    var hours = (DateTime.Now - attendance.CheckInTime.Value).TotalHours;
+                    attendance.Notes = $"عمل {hours:F1} ساعات";
+                }
+
                 await _context.SaveChangesAsync();
-                ViewBag.Message = "تم تسجيل الانصراف بنجاح";
+                TempData["Success"] = "✅ تم تسجيل الانصراف بنجاح";
+            }
+            else if (attendance == null)
+            {
+                TempData["Error"] = "❌ لا يوجد تسجيل حضور اليوم. الرجاء تسجيل الحضور أولاً";
             }
             else
             {
-                ViewBag.Message = "لا يوجد تسجيل حضور اليوم أو تم تسجيل الانصراف مسبقاً";
+                TempData["Warning"] = "⚠️ تم تسجيل الانصراف مسبقاً اليوم";
             }
 
             return RedirectToAction("Index");
         }
-        // تقرير الحضور لموظف معين
+
+        // تقرير الحضور (للمدير فقط)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Report(int? employeeId, DateTime? fromDate, DateTime? toDate)
         {
-            // جلب كل الموظفين للفلتر
             ViewBag.Employees = await _context.Employees.ToListAsync();
 
-            // استعلام الحضور
             var query = _context.Attendances
                 .Include(a => a.Employee)
                 .AsQueryable();
 
-            // فلترة حسب الموظف
             if (employeeId.HasValue && employeeId.Value > 0)
             {
                 query = query.Where(a => a.EmployeeId == employeeId.Value);
                 ViewBag.SelectedEmployee = employeeId.Value;
             }
 
-            // فلترة حسب التاريخ
             if (fromDate.HasValue)
             {
                 query = query.Where(a => a.Date >= fromDate.Value);
@@ -127,7 +163,6 @@ namespace HRSystem.Controllers
                 .ThenBy(a => a.Employee.Name)
                 .ToListAsync();
 
-            // إحصائيات التقرير
             ViewBag.TotalRecords = attendances.Count;
             ViewBag.PresentCount = attendances.Count(a => a.IsPresent == true);
             ViewBag.AbsentCount = attendances.Count(a => a.IsPresent == false && a.Status != "إجازة");
@@ -136,7 +171,8 @@ namespace HRSystem.Controllers
             return View(attendances);
         }
 
-        // تصدير التقرير إلى CSV
+        // تصدير التقرير إلى CSV (للمدير فقط)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportCSV(int? employeeId, DateTime? fromDate, DateTime? toDate)
         {
             var query = _context.Attendances
@@ -156,17 +192,23 @@ namespace HRSystem.Controllers
                 .OrderByDescending(a => a.Date)
                 .ToListAsync();
 
-            // إنشاء ملف CSV
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("التاريخ,الموظف,وقت الحضور,وقت الانصراف,الحالة,ملاحظات");
+            sb.AppendLine("التاريخ,الموظف,وقت الحضور,وقت الانصراف,عدد الساعات,الحالة,ملاحظات");
 
             foreach (var a in attendances)
             {
-                sb.AppendLine($"{a.Date:yyyy-MM-dd},{a.Employee.Name},{a.CheckInTime?.ToString("HH:mm")},{a.CheckOutTime?.ToString("HH:mm")},{a.Status},{a.Notes}");
+                var hours = "";
+                if (a.CheckInTime.HasValue && a.CheckOutTime.HasValue)
+                {
+                    var diff = a.CheckOutTime.Value - a.CheckInTime.Value;
+                    hours = $"{diff.Hours}:{diff.Minutes:D2}";
+                }
+
+                sb.AppendLine($"\"{a.Date:yyyy-MM-dd}\",\"{a.Employee?.Name}\",\"{a.CheckInTime?.ToString("HH:mm")}\",\"{a.CheckOutTime?.ToString("HH:mm")}\",\"{hours}\",\"{a.Status}\",\"{a.Notes}\"");
             }
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
-            return File(bytes, "text/csv", $"تقرير_الحضور_{DateTime.Now:yyyyMMdd}.csv");
+            return File(bytes, "text/csv", $"تقرير_الحضور_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
         }
     }
 }

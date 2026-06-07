@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using HRSystem.Models;
+using HRSystem.Services;
 using Microsoft.AspNetCore.Identity;
-using HRSystem.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // تعديل إعدادات كلمة المرور (عشان تكون أسهل في البداية)
 builder.Services.Configure<IdentityOptions>(options =>
 {
