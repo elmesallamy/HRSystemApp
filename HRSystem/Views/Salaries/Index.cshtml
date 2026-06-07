@@ -60,16 +60,11 @@
                         <i class="fas fa-search me-1"></i> عرض
                     </button>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <form method="post" asp-action="CalculateSalaries">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="month" value="@currentMonth" />
-                        <input type="hidden" name="year" value="@currentYear" />
-                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('سيتم حساب الرواتب...')">
-                            <i class="fas fa-calculator me-1"></i> حساب الرواتب
-                        </button>
-                    </form>
-                </div>
+                <a href="@Url.Action("CalculateSalaries", "Salaries", new { month = currentMonth, year = currentYear })"
+                   class="btn btn-success w-100"
+                   onclick="return confirm('سيتم حساب الرواتب...')">
+                    <i class="fas fa-calculator me-1"></i> حساب الرواتب (GET)
+                </a>
                 <div class="col-md-2 d-flex align-items-end">
                     <form method="post" asp-action="ConfirmPayment">
                         <input type="hidden" name="month" value="@currentMonth" />
@@ -108,7 +103,7 @@
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0">
+                    <table class="table table-hover table-striped mb-0" id="salariesTable">
                         <thead class="table-light">
                             <tr>
                                 <th>الموظف</th>
@@ -163,44 +158,6 @@
                                         </form>
                                     </td>
                                 </tr>
-
-                                <!-- Modal التعديل -->
-                                <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title">تعديل راتب @item.Employee?.Name</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form method="post" asp-action="EditSalary">
-                                                <div class="modal-body">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الراتب الأساسي</label>
-                                                        <input type="text" class="form-control" value="@item.BasicSalary.ToString("N0")" disabled />
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">البدلات</label>
-                                                        <input type="number" name="allowances" class="form-control" value="@item.Allowances" step="100" />
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الخصومات</label>
-                                                        <input type="number" name="deductions" class="form-control" value="@item.Deductions" step="100" />
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">ملاحظات</label>
-                                                        <textarea name="notes" class="form-control" rows="2">@item.Notes</textarea>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             }
                         </tbody>
                     </table>
@@ -219,3 +176,44 @@
         </div>
     </div>
 </div>
+
+@* ✅ كل الـ Modals تكون هنا - خارج الجدول تماماً *@
+@foreach (var item in Model)
+{
+    <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">تعديل راتب @(item.Employee?.Name ?? "موظف")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" asp-action="EditSalary">
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">الراتب الأساسي</label>
+                            <input type="text" class="form-control" value="@item.BasicSalary.ToString("N0")" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">البدلات</label>
+                            <input type="number" name="allowances" class="form-control" value="@item.Allowances" step="100" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الخصومات</label>
+                            <input type="number" name="deductions" class="form-control" value="@item.Deductions" step="100" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظات</label>
+                            <textarea name="notes" class="form-control" rows="2">@item.Notes</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

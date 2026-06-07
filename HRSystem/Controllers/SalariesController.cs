@@ -31,10 +31,14 @@ namespace HRSystem.Controllers
             ViewBag.Years = GetYearsList();
 
             var salaries = await _context.Salaries
-                .Include(s => s.Employee)
-                .Where(s => s.Month == currentMonth && s.Year == currentYear)
-                .OrderBy(s => s.Employee.Name)
-                .ToListAsync();
+       .Include(s => s.Employee)
+       .Where(s => s.Month == currentMonth && s.Year == currentYear)
+       .ToListAsync();
+
+            // ✅ الترتيب بعد جلب البيانات (في الذاكرة، مش في قاعدة البيانات)
+            salaries = salaries
+                .OrderBy(s => s.Employee?.Name ?? "")
+                .ToList();
 
             if (!salaries.Any())
             {
@@ -45,88 +49,88 @@ namespace HRSystem.Controllers
         }
 
         // حساب الرواتب لشهر معين
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> CalculateSalaries(int month, int year)
+{
+    try
+    {
+        int targetMonth = Convert.ToInt32(month);
+        int targetYear = Convert.ToInt32(year);
+
+        // جلب جميع الموظفين النشطين
+        var employees = await _context.Employees
+            .Where(e => e.IsActive == true)
+            .ToListAsync();
+
+        // حذف الرواتب الموجودة لهذا الشهر (إن وجدت) لإعادة الحساب
+        var existingSalaries = await _context.Salaries
+            .Where(s => s.Month == targetMonth && s.Year == targetYear)
+            .ToListAsync();
+
+        if (existingSalaries.Any())
         {
-            try
-            {
-                int targetMonth = Convert.ToInt32(month);
-                int targetYear = Convert.ToInt32(year);
-
-                // جلب جميع الموظفين النشطين
-                var employees = await _context.Employees
-                    .Where(e => e.IsActive == true)
-                    .ToListAsync();
-
-                // حذف الرواتب الموجودة لهذا الشهر (إن وجدت) لإعادة الحساب
-                var existingSalaries = await _context.Salaries
-                    .Where(s => s.Month == targetMonth && s.Year == targetYear)
-                    .ToListAsync();
-
-                if (existingSalaries.Any())
-                {
-                    _context.Salaries.RemoveRange(existingSalaries);
-                    await _context.SaveChangesAsync();
-                }
-
-                // حساب راتب كل موظف
-                foreach (var employee in employees)
-                {
-                    var startDate = new DateTime(targetYear, targetMonth, 1);
-                    var endDate = startDate.AddMonths(1).AddDays(-1);
-
-                    var allAttendances = await _context.Attendances
-                        .Where(a => a.EmployeeId == employee.Id && a.Date >= startDate && a.Date <= endDate)
-                        .ToListAsync();
-
-                    var absentDays = 0;
-                    var lateDays = 0;
-
-                    foreach (var att in allAttendances)
-                    {
-                        if (att.IsPresent == false && att.Status != "إجازة")
-                        {
-                            absentDays++;
-                        }
-
-                        if (att.Status == "متأخر")
-                        {
-                            lateDays++;
-                        }
-                    }
-
-                    var dailyRate = employee.Salary / 30;
-                    var deductionAmount = (absentDays * dailyRate) + (lateDays * (dailyRate / 2));
-
-                    // ✅ تأكد من تعيين جميع القيم (حتى الصفر)
-                    var salary = new Salary
-                    {
-                        EmployeeId = employee.Id,
-                        Month = targetMonth,
-                        Year = targetYear,
-                        BasicSalary = employee.Salary,
-                        Allowances = 0,           // ✅ صريحاً = 0
-                        Deductions = deductionAmount,
-                        NetSalary = employee.Salary - deductionAmount,
-                        AbsentDays = absentDays,
-                        LateDays = lateDays,
-                        IsPaid = false,
-                        CreatedAt = DateTime.Now
-                    };
-
-                    _context.Salaries.Add(salary);
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = $"✅ تم حساب الرواتب لشهر {targetMonth}/{targetYear} بنجاح. عدد الموظفين: {employees.Count}";
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"❌ حدث خطأ: {ex.Message}";
-            }
-
-            return RedirectToAction("Index", new { month, year });
+            _context.Salaries.RemoveRange(existingSalaries);
+            await _context.SaveChangesAsync();
         }
+
+        // حساب راتب كل موظف
+        foreach (var employee in employees)
+        {
+            var startDate = new DateTime(targetYear, targetMonth, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            var allAttendances = await _context.Attendances
+                .Where(a => a.EmployeeId == employee.Id && a.Date >= startDate && a.Date <= endDate)
+                .ToListAsync();
+
+            var absentDays = 0;
+            var lateDays = 0;
+
+            foreach (var att in allAttendances)
+            {
+                if (att.IsPresent == false && att.Status != "إجازة")
+                {
+                    absentDays++;
+                }
+
+                if (att.Status == "متأخر")
+                {
+                    lateDays++;
+                }
+            }
+
+            var dailyRate = employee.Salary / 30;
+            var deductionAmount = (absentDays * dailyRate) + (lateDays * (dailyRate / 2));
+
+            // ✅ تأكد من تعيين جميع القيم (حتى الصفر)
+            var salary = new Salary
+            {
+                EmployeeId = employee.Id,
+                Month = targetMonth,
+                Year = targetYear,
+                BasicSalary = employee.Salary,
+                Allowances = 0,           // ✅ صريحاً = 0
+                Deductions = deductionAmount,
+                NetSalary = employee.Salary - deductionAmount,
+                AbsentDays = absentDays,
+                LateDays = lateDays,
+                IsPaid = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Salaries.Add(salary);
+        }
+
+        await _context.SaveChangesAsync();
+        TempData["Success"] = $"✅ تم حساب الرواتب لشهر {targetMonth}/{targetYear} بنجاح. عدد الموظفين: {employees.Count}";
+    }
+    catch (Exception ex)
+    {
+        TempData["Error"] = $"❌ حدث خطأ: {ex.Message}";
+    }
+
+    return RedirectToAction("Index", new { month, year });
+}
 
         // تعديل راتب فردي
         [HttpPost]

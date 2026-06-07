@@ -1,4 +1,4 @@
-﻿﻿@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 
 <!DOCTYPE html>
@@ -147,7 +147,7 @@
                         <ul class="navbar-nav">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-circle me-1"></i> @User.Identity.Name
+                                        <i class="fas fa-user-circle me-1"></i> @(User.Identity?.Name ?? "مستخدم")
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
