@@ -136,6 +136,7 @@ namespace HRSystem.Controllers
             ViewBag.Employees = await _context.Employees.ToListAsync();
 
             var query = _context.Attendances
+                .Where(a => a.Employee != null)
                 .Include(a => a.Employee)
                 .AsQueryable();
 
@@ -158,8 +159,9 @@ namespace HRSystem.Controllers
             }
 
             var attendances = await query
+               
                 .OrderByDescending(a => a.Date)
-                .ThenBy(a => a.Employee.Name)
+                 .ThenBy(a => a.Employee!.Name)
                 .ToListAsync();
 
             ViewBag.TotalRecords = attendances.Count;

@@ -15,11 +15,11 @@ namespace HRSystem.Services
             _context = context;
         }
 
-        public async Task<Employee> GetCurrentEmployeeAsync()
+        public async Task<Employee?> GetCurrentEmployeeAsync()
         {
             var userEmail = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
             if (string.IsNullOrEmpty(userEmail))
-                return null!;
+                return null;
 
             return await _context.Employees.FirstOrDefaultAsync(e => e.Email == userEmail);
         }

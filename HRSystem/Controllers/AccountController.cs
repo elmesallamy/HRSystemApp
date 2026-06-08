@@ -1,4 +1,5 @@
 ﻿using HRSystem.Models;
+using HRSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,18 @@ namespace HRSystem.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            ApplicationDbContext context,
+            ICurrentUserService currentUserService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet]
@@ -31,7 +38,6 @@ namespace HRSystem.Controllers
 
             if (user != null)
             {
-                // ✅ التحقق: هل الحساب مفعل من الأدمن؟
                 if (!user.IsApproved)
                 {
                     ViewBag.Error = "⏳ حسابك قيد المراجعة. سيتم تفعيله من قبل المدير قريباً.";
@@ -43,7 +49,7 @@ namespace HRSystem.Controllers
                 {
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Dashboard", "Home");
                     }
                     return RedirectToAction("Index", "Home");
                 }
@@ -64,29 +70,16 @@ namespace HRSystem.Controllers
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Register(string email, string password, string fullName, string position)
         {
-            // ✅ التحقق من البيانات
             if (string.IsNullOrEmpty(fullName))
             {
                 ViewBag.Error = "الاسم كاملاً مطلوب";
                 return View();
             }
 
-            if (string.IsNullOrEmpty(email))
-            {
-                ViewBag.Error = "البريد الإلكتروني مطلوب";
-                return View();
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                ViewBag.Error = "كلمة المرور مطلوبة";
-                return View();
-            }
-
-            // إنشاء مستخدم جديد
             var user = new ApplicationUser
             {
                 UserName = email,
@@ -101,10 +94,8 @@ namespace HRSystem.Controllers
 
             if (result.Succeeded)
             {
-                // إضافة المستخدم لدور Employee
                 await _userManager.AddToRoleAsync(user, "Employee");
 
-                // إنشاء موظف في جدول Employees
                 var employee = new Employee
                 {
                     Name = fullName,
@@ -119,15 +110,16 @@ namespace HRSystem.Controllers
                 _context.Employees.Add(employee);
                 await _context.SaveChangesAsync();
 
-                // ✅ تخزين رسالة النجاح
                 TempData["Success"] = "✅ تم تسجيل طلبك بنجاح. سيتم تفعيل حسابك من قبل المدير.";
-
-                // ✅ تحويل المستخدم لصفحة الدخول (مهم جداً)
                 return RedirectToAction("Login");
             }
 
-            // ✅ هذا السطر يشتغل فقط لو فشل التسجيل
             ViewBag.Error = "حدث خطأ: " + string.Join(", ", result.Errors.Select(e => e.Description));
+            return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
             return View();
         }
     }

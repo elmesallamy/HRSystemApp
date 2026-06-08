@@ -4,6 +4,6 @@ namespace HRSystem.Services
 {
     public interface ICurrentUserService
     {
-        Task<Employee> GetCurrentEmployeeAsync();
+        Task<Employee?> GetCurrentEmployeeAsync();
     }
 }

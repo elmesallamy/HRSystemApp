@@ -8,11 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-// ❌ تم حذف السطر المكرر: namespace HRSystem.Controllers
-
 namespace HRSystem.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]  // ✅ فقط الأدمن يقدر يدير الموظفين
     public class EmployeesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -42,6 +40,22 @@ namespace HRSystem.Controllers
             {
                 return NotFound();
             }
+
+            // جلب آخر 5 سجلات حضور للموظف
+            var recentAttendance = await _context.Attendances
+                .Where(a => a.EmployeeId == id)
+                .OrderByDescending(a => a.Date)
+                .Take(5)
+                .ToListAsync();
+            ViewBag.RecentAttendance = recentAttendance;
+
+            // جلب آخر 5 إجازات للموظف
+            var recentLeaves = await _context.Leaves
+                .Where(l => l.EmployeeId == id)
+                .OrderByDescending(l => l.RequestDate)
+                .Take(5)
+                .ToListAsync();
+            ViewBag.RecentLeaves = recentLeaves;
 
             return View(employee);
         }
