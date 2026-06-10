@@ -1,0 +1,220 @@
+﻿@model IEnumerable<HRSystem.Models.Salary>
+
+@{
+    ViewData["Title"] = "إدارة الرواتب";
+    var currentMonth = ViewBag.Month;
+    var currentYear = ViewBag.Year;
+    var noData = ViewBag.NoData;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-money-bill-wave text-primary"></i> إدارة الرواتب
+        </h1>
+    </div>
+
+    <!-- فلتر الشهر والسنة -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-filter text-primary me-2"></i> فلترة الرواتب
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">الشهر</label>
+                    <select name="month" class="form-select">
+                        @foreach (var m in ViewBag.Months)
+                        {
+                            if (Convert.ToInt32(m.Value) == currentMonth)
+                            {
+                                <option value="@m.Value" selected>@m.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@m.Value">@m.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">السنة</label>
+                    <select name="year" class="form-select">
+                        @foreach (var y in ViewBag.Years)
+                        {
+                            if (Convert.ToInt32(y.Value) == currentYear)
+                            {
+                                <option value="@y.Value" selected>@y.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@y.Value">@y.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i> عرض
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <form method="post" asp-action="CalculateSalaries">
+                        <input type="hidden" name="month" value="@currentMonth" />
+                        <input type="hidden" name="year" value="@currentYear" />
+                        <button type="submit" class="btn btn-success w-100" onclick="return confirm('سيتم حساب الرواتب بناءً على سجلات الحضور. استمرار؟')">
+                            <i class="fas fa-calculator me-1"></i> حساب الرواتب
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <form method="post" asp-action="ConfirmPayment">
+                        <input type="hidden" name="month" value="@currentMonth" />
+                        <input type="hidden" name="year" value="@currentYear" />
+                        <button type="submit" class="btn btn-info w-100" onclick="return confirm('تأكيد صرف الرواتب لهذا الشهر؟')">
+                            <i class="fas fa-check-circle me-1"></i> تأكيد الصرف
+                        </button>
+                    </form>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول الرواتب -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2 text-primary"></i> رواتب @currentMonth/@currentYear
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            @if (noData == true)
+            {
+                <div class="alert alert-warning m-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    لا توجد رواتب لهذا الشهر. اضغط "حساب الرواتب" لإنشائها.
+                </div>
+            }
+            else if (!Model.Any())
+            {
+                <div class="alert alert-info m-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    لا توجد بيانات للعرض
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الموظف</th>
+                                <th>الراتب الأساسي</th>
+                                <th>البدلات</th>
+                                <th>الخصومات</th>
+                                <th>الصافي</th>
+                                <th>أيام الغياب</th>
+                                <th>أيام التأخير</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="align-middle">@(item.Employee?.Name ?? "-")</td>
+                                    <td class="align-middle">@item.BasicSalary.ToString("N0")</td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-success">+ @item.Allowances.ToString("N0")</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-danger">- @item.Deductions.ToString("N0")</span>
+                                    </td>
+                                    <td class="align-middle fw-bold">@item.NetSalary.ToString("N0")</td>
+                                    <td class="align-middle">@item.AbsentDays</td>
+                                    <td class="align-middle">@item.LateDays</td>
+                                    <td class="align-middle">
+                                        @if (item.IsPaid)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i> مدفوع
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i> غير مدفوع
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="align-middle">
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal-@item.Id">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form method="post" asp-action="DeleteSalary" asp-route-id="@item.Id" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا السجل؟')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal التعديل -->
+                                <div class="modal fade" id="editModal-@item.Id" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title">تعديل راتب @item.Employee?.Name</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="post" asp-action="EditSalary">
+                                                <div class="modal-body">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <div class="mb-3">
+                                                        <label class="form-label">الراتب الأساسي</label>
+                                                        <input type="text" class="form-control" value="@item.BasicSalary.ToString("N0")" disabled />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">البدلات</label>
+                                                        <input type="number" name="allowances" class="form-control" value="@item.Allowances" step="100" />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">الخصومات</label>
+                                                        <input type="number" name="deductions" class="form-control" value="@item.Deductions" step="100" />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">ملاحظات</label>
+                                                        <textarea name="notes" class="form-control" rows="2">@item.Notes</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-white">
+            <div class="row">
+                <div class="col">
+                    <small class="text-muted">
+                        <i class="fas fa-chart-line me-1"></i>
+                        إجمالي الرواتب: @Model.Sum(s => s.NetSalary).ToString("N0")
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

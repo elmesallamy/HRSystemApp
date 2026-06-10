@@ -1,6 +1,13 @@
-﻿@{
+﻿﻿@using System.Globalization
+@{
     ViewData["Title"] = "لوحة التحكم";
     var isAdmin = User.IsInRole("Admin");
+
+    // قيم افتراضية لمنع الأخطاء
+    var totalEmployees = ViewBag.TotalEmployees ?? 0;
+    var todayAttendance = ViewBag.TodayAttendance ?? 0;
+    var pendingLeaves = ViewBag.PendingLeaves ?? 0;
+    var activeEmployees = ViewBag.ActiveEmployees ?? 0;
 }
 
 <div class="container-fluid">
@@ -10,59 +17,59 @@
         </h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <span class="text-muted">
-                <i class="far fa-calendar-alt"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+                <i class="far fa-calendar-alt"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy", new CultureInfo("ar-EG"))
             </span>
         </div>
     </div>
 
     <!-- بطاقات الإحصائيات -->
     <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card dashboard-card bg-primary text-white card-hover">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card bg-primary text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title opacity-75">إجمالي الموظفين</h6>
-                            <h2 class="card-text">@ViewBag.TotalEmployees</h2>
+                            <h6 class="card-title fw-light">إجمالي الموظفين</h6>
+                            <h2 class="card-text fw-bold mb-0">@totalEmployees</h2>
                         </div>
                         <i class="fas fa-users fa-3x opacity-50"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card dashboard-card bg-success text-white card-hover">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card bg-success text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title opacity-75">الحضور اليوم</h6>
-                            <h2 class="card-text">@ViewBag.TodayAttendance</h2>
+                            <h6 class="card-title fw-light">الحضور اليوم</h6>
+                            <h2 class="card-text fw-bold mb-0">@todayAttendance</h2>
                         </div>
                         <i class="fas fa-check-circle fa-3x opacity-50"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card dashboard-card bg-warning text-white card-hover">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card bg-warning text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title opacity-75">إجازات معلقة</h6>
-                            <h2 class="card-text">@ViewBag.PendingLeaves</h2>
+                            <h6 class="card-title fw-light">إجازات معلقة</h6>
+                            <h2 class="card-text fw-bold mb-0">@pendingLeaves</h2>
                         </div>
                         <i class="fas fa-clock fa-3x opacity-50"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card dashboard-card bg-info text-white card-hover">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card dashboard-card bg-info text-white shadow-sm h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-title opacity-75">موظفين نشطين</h6>
-                            <h2 class="card-text">@ViewBag.ActiveEmployees</h2>
+                            <h6 class="card-title fw-light">موظفين نشطين</h6>
+                            <h2 class="card-text fw-bold mb-0">@activeEmployees</h2>
                         </div>
                         <i class="fas fa-user-check fa-3x opacity-50"></i>
                     </div>
@@ -71,47 +78,97 @@
         </div>
     </div>
 
-    <!-- الروابط السريعة -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-white">
+    <!-- قسمين: الرسم البياني + آخر النشاطات -->
+    <div class="row mb-4">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3">
                     <h5 class="mb-0">
-                        <i class="fas fa-link text-primary"></i> روابط سريعة
+                        <i class="fas fa-chart-line text-primary me-2"></i>اتجاهات الحضور (آخر 7 أيام)
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <a href="/Employees" class="btn btn-outline-primary w-100 text-start">
+                    <canvas id="attendanceChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bell text-warning me-2"></i>آخر الطلبات
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (ViewBag.RecentLeaves != null && ViewBag.RecentLeaves.Count > 0)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var leave in ViewBag.RecentLeaves)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-calendar-day text-primary me-2"></i>
+                                        <strong>@leave.EmployeeName</strong>
+                                        <small class="text-muted d-block">@leave.StartDate.ToString("dd/MM") - @leave.EndDate.ToString("dd/MM")</small>
+                                    </div>
+                                    <span class="badge bg-warning text-dark">@leave.Status</span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-4 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>لا توجد طلبات حديثة</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الروابط السريعة -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link text-primary me-2"></i>روابط سريعة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="/Employees" class="btn btn-outline-primary w-100 py-2 text-start">
                                 <i class="fas fa-users me-2"></i> إدارة الموظفين
                             </a>
                         </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <a href="/Attendance" class="btn btn-outline-success w-100 text-start">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="/Attendance" class="btn btn-outline-success w-100 py-2 text-start">
                                 <i class="fas fa-fingerprint me-2"></i> الحضور والانصراف
                             </a>
                         </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <a href="/Leaves" class="btn btn-outline-warning w-100 text-start">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="/Leaves" class="btn btn-outline-warning w-100 py-2 text-start">
                                 <i class="fas fa-calendar-alt me-2"></i> طلبات الإجازات
                             </a>
                         </div>
                         @if (isAdmin)
                         {
-                            <div class="col-md-3 col-sm-6 mb-2">
-                                <a href="/Admin/ManageUsers" class="btn btn-outline-danger w-100 text-start">
+                            <div class="col-md-3 col-sm-6">
+                                <a href="/Admin/ManageUsers" class="btn btn-outline-danger w-100 py-2 text-start">
                                     <i class="fas fa-user-shield me-2"></i> إدارة المستخدمين
                                 </a>
                             </div>
                         }
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <a href="/Leaves/MyLeaves" class="btn btn-outline-info w-100 text-start">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="/Leaves/MyLeaves" class="btn btn-outline-info w-100 py-2 text-start">
                                 <i class="fas fa-calendar-check me-2"></i> إجازاتي
                             </a>
                         </div>
-                        <div class="col-md-3 col-sm-6 mb-2">
-                            <a href="/Attendance/Report" class="btn btn-outline-secondary w-100 text-start">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="/Attendance/Report" class="btn btn-outline-secondary w-100 py-2 text-start">
                                 <i class="fas fa-chart-bar me-2"></i> تقارير الحضور
                             </a>
                         </div>
@@ -121,3 +178,42 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // رسم بياني للحضور (سيتم تمرير البيانات من الـ Controller)
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+
+        // هذه البيانات مثال. يجب أن تأتي من الـ Controller الخاص بك (ViewBag.ChartLabels, ViewBag.ChartData)
+        const labels = @Html.Raw(Json.Serialize(ViewBag.ChartLabels ?? new[] { "سبت", "أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة" }));
+        const data = @Html.Raw(Json.Serialize(ViewBag.ChartData ?? new[] { 5, 8, 12, 10, 15, 18, 20 }));
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'عدد الحضور',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true, stepSize: 1, title: { display: true, text: 'عدد الموظفين' } },
+                    x: { title: { display: true, text: 'الأيام' } }
+                }
+            }
+        });
+    </script>
+}

@@ -2,52 +2,204 @@
 
 @{
     ViewData["Title"] = "إجازاتي";
+    var isAdmin = User.IsInRole("Admin");
+
+    // إحصائيات سريعة
+    var pendingCount = Model.Count(l => l.Status == "قيد الانتظار");
+    var approvedCount = Model.Count(l => l.Status == "موافقة");
+    var rejectedCount = Model.Count(l => l.Status == "مرفوضة");
+    var totalApprovedDays = Model.Where(l => l.Status == "موافقة").Sum(l => l.TotalDays);
 }
 
-<h2>إجازاتي</h2>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-calendar-alt text-primary"></i> إجازاتي
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group">
+                <a href="/Leaves/Create" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i> طلب إجازة جديد
+                </a>
+                @if (isAdmin)
+                {
+                    <a href="/Leaves" class="btn btn-info">
+                        <i class="fas fa-list me-1"></i> كل الطلبات
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
 
-<hr />
+    <!-- بطاقات الإحصائيات -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title fw-light">قيد الانتظار</h6>
+                            <h2 class="card-text fw-bold mb-0">@pendingCount</h2>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title fw-light">تمت الموافقة</h6>
+                            <h2 class="card-text fw-bold mb-0">@approvedCount</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title fw-light">مرفوضة</h6>
+                            <h2 class="card-text fw-bold mb-0">@rejectedCount</h2>
+                        </div>
+                        <i class="fas fa-times-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title fw-light">إجمالي أيام الإجازات</h6>
+                            <h2 class="card-text fw-bold mb-0">@totalApprovedDays</h2>
+                        </div>
+                        <i class="fas fa-chart-line fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<a href="/Leaves/Create" class="btn btn-success mb-3">طلب إجازة جديد</a>
-<a href="/Leaves" class="btn btn-info mb-3">كل الطلبات (للمدير)</a>
+    <!-- جدول الإجازات -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2 text-primary"></i> سجل إجازاتي
+                    </h5>
+                </div>
+                <div class="col-auto">
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="searchInput" class="form-control" placeholder="بحث..." aria-label="بحث">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0" id="leavesTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>تاريخ البدء</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>عدد الأيام</th>
+                            <th>نوع الإجازة</th>
+                            <th>السبب</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الطلب</th>
+                            <th>سبب الرفض</th>
+                            <th>تفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var statusClass = item.Status switch
+                            {
+                                "قيد الانتظار" => "warning",
+                                "موافقة" => "success",
+                                "مرفوضة" => "danger",
+                                _ => "secondary"
+                            };
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>تاريخ البدء</th>
-            <th>تاريخ الانتهاء</th>
-            <th>عدد الأيام</th>
-            <th>نوع الإجازة</th>
-            <th>السبب</th>
-            <th>الحالة</th>
-            <th>تاريخ الطلب</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.StartDate.ToString("yyyy-MM-dd")</td>
-                <td>@item.EndDate.ToString("yyyy-MM-dd")</td>
-                <td>@item.TotalDays</td>
-                <td>@item.LeaveType</td>
-                <td>@item.Reason</td>
-                <td>
-                    @if (item.Status == "قيد الانتظار")
-                    {
-                        <span class="badge bg-warning">@item.Status</span>
+                            <tr>
+                                <td class="align-middle">@item.StartDate.ToString("yyyy-MM-dd")</td>
+                                <td class="align-middle">@item.EndDate.ToString("yyyy-MM-dd")</td>
+                                <td class="align-middle">@item.TotalDays</td>
+                                <td class="align-middle">@item.LeaveType</td>
+                                <td class="align-middle">@item.Reason</td>
+                                <td class="align-middle">
+                                    <span class="badge bg-@statusClass">@item.Status</span>
+                                </td>
+                                <td class="align-middle">@item.RequestDate.ToString("yyyy-MM-dd")</td>
+                                <td class="align-middle text-danger">@item.RejectionReason</td>
+                                <td class="align-middle">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="تفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <small class="text-muted">
+                        <i class="fas fa-chart-simple me-1"></i> إجمالي الطلبات: <strong>@Model.Count()</strong>
+                    </small>
+                </div>
+                <div class="col-auto">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar-week me-1"></i> آخر تحديث: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // وظيفة البحث السريع
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            var input = document.getElementById('searchInput');
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById('leavesTable');
+            var tr = table.getElementsByTagName('tr');
+
+            for (var i = 1; i < tr.length; i++) {
+                var tdArray = tr[i].getElementsByTagName('td');
+                var found = false;
+                for (var j = 0; j < tdArray.length; j++) {
+                    var txtValue = tdArray[j].textContent || tdArray[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
                     }
-                    else if (item.Status == "موافقة")
-                    {
-                        <span class="badge bg-success">@item.Status</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">@item.Status</span>
-                    }
-                </td>
-                <td>@item.RequestDate.ToString("yyyy-MM-dd")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+                }
+                tr[i].style.display = found ? '' : 'none';
+            }
+        });
+
+        // دعم زر Enter في مربع البحث
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+    </script>
+}

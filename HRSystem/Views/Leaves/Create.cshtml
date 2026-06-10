@@ -1,51 +1,147 @@
 ﻿@model HRSystem.Models.Leave
 
 @{
-    ViewData["Title"] = "طلب إجازة";
+    ViewData["Title"] = "طلب إجازة جديد";
 }
 
-<h2>طلب إجازة جديد</h2>
-<hr />
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-calendar-plus text-primary"></i> @ViewData["Title"]
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a asp-action="MyLeaves" class="btn btn-secondary">
+                <i class="fas fa-arrow-right me-1"></i> رجوع إلى إجازاتي
+            </a>
+        </div>
+    </div>
 
-<h4>الموظف: @ViewBag.EmployeeName</h4>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle text-primary me-2"></i> الموظف: @ViewBag.EmployeeName
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LeaveType" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                    <select asp-for="LeaveType" class="form-select">
+                                        <option value="سنوية">سنوية</option>
+                                        <option value="مرضية">مرضية</option>
+                                        <option value="طارئة">طارئة</option>
+                                        <option value="بدون راتب">بدون راتب</option>
+                                    </select>
+                                </div>
+                            </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="LeaveType" class="control-label">نوع الإجازة</label>
-                <select asp-for="LeaveType" class="form-control">
-                    <option value="سنوية">سنوية</option>
-                    <option value="مرضية">مرضية</option>
-                    <option value="طارئة">طارئة</option>
-                    <option value="بدون راتب">بدون راتب</option>
-                </select>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="StartDate" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                    <input asp-for="StartDate" class="form-control" type="date" />
+                                </div>
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EndDate" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-week"></i></span>
+                                    <input asp-for="EndDate" class="form-control" type="date" />
+                                </div>
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">عدد الأيام</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calculator"></i></span>
+                                    <input type="text" id="totalDays" class="form-control" readonly disabled placeholder="سيتم حسابه تلقائياً" />
+                                </div>
+                                <small class="text-muted">سيتم حساب عدد الأيام تلقائياً عند اختيار التاريخ</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Reason" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-pencil-alt"></i></span>
+                                <textarea asp-for="Reason" class="form-control" rows="4" placeholder="اذكر سبب الإجازة..."></textarea>
+                            </div>
+                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-paper-plane me-1"></i> إرسال الطلب
+                            </button>
+                            <a asp-action="MyLeaves" class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-1"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label asp-for="StartDate" class="control-label">تاريخ البدء</label>
-                <input asp-for="StartDate" class="form-control" type="date" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
+            <div class="card mt-4">
+                <div class="card-body bg-light">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                            <h6>قيد المراجعة</h6>
+                            <small class="text-muted">سيتم مراجعة طلبك من قبل المدير</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h6>قبول</h6>
+                            <small class="text-muted">بعد الموافقة سيتم احتساب الإجازة</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                            <h6>رفض</h6>
+                            <small class="text-muted">سيتم إعلامك بسبب الرفض</small>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="EndDate" class="control-label">تاريخ الانتهاء</label>
-                <input asp-for="EndDate" class="form-control" type="date" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Reason" class="control-label">سبب الإجازة</label>
-                <textarea asp-for="Reason" class="form-control" rows="4"></textarea>
-                <span asp-validation-for="Reason" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">إرسال الطلب</button>
-                <a asp-action="MyLeaves" class="btn btn-secondary">إلغاء</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // حساب عدد الأيام تلقائياً
+        function calculateDays() {
+            var startDate = document.getElementById('StartDate').value;
+            var endDate = document.getElementById('EndDate').value;
+
+            if (startDate && endDate) {
+                var start = new Date(startDate);
+                var end = new Date(endDate);
+                var diffTime = Math.abs(end - start);
+                var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                document.getElementById('totalDays').value = diffDays + ' يوم / أيام';
+            } else {
+                document.getElementById('totalDays').value = '';
+            }
+        }
+
+        document.getElementById('StartDate').addEventListener('change', calculateDays);
+        document.getElementById('EndDate').addEventListener('change', calculateDays);
+    </script>
+}

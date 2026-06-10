@@ -1,8 +1,96 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "الرئيسية";
+    var isAuthenticated = User.Identity.IsAuthenticated;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-building fa-4x text-primary mb-3"></i>
+                        <h1 class="display-4 fw-bold text-primary">نظام إدارة الموارد البشرية</h1>
+                        <p class="lead text-muted">حل متكامل لإدارة شؤون الموظفين والحضور والإجازات</p>
+                    </div>
+
+                    @if (!isAuthenticated)
+                    {
+                        <div class="mt-4">
+                            <a href="/Account/Login" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-sign-in-alt me-2"></i> تسجيل الدخول
+                            </a>
+                            <a href="/Account/Register" class="btn btn-outline-primary btn-lg px-4">
+                                <i class="fas fa-user-plus me-2"></i> إنشاء حساب جديد
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-4">
+                            <a href="/Home/Dashboard" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-tachometer-alt me-2"></i> الذهاب إلى لوحة التحكم
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- المميزات -->
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 text-center">
+                        <div class="card-body">
+                            <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="card-title">إدارة الموظفين</h5>
+                            <p class="card-text text-muted">إدارة كاملة لبيانات الموظفين، مع إمكانية الإضافة والتعديل والحذف.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 text-center">
+                        <div class="card-body">
+                            <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-fingerprint fa-2x text-success"></i>
+                            </div>
+                            <h5 class="card-title">الحضور والانصراف</h5>
+                            <p class="card-text text-muted">تسجيل الحضور والانصراف للموظفين مع تقارير مفصلة وإحصائيات.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border-0 text-center">
+                        <div class="card-body">
+                            <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-calendar-alt fa-2x text-warning"></i>
+                            </div>
+                            <h5 class="card-title">إدارة الإجازات</h5>
+                            <p class="card-text text-muted">طلب الإجازات، متابعتها، والموافقة عليها بإشعارات فورية.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+</style>

@@ -1,6 +1,74 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "سياسة الخصوصية";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-shield-alt fa-4x text-primary mb-3"></i>
+                        <h1 class="display-5 fw-bold">@ViewData["Title"]</h1>
+                        <p class="text-muted">آخر تحديث: @DateTime.Now.ToString("dd MMMM yyyy")</p>
+                    </div>
+
+                    <hr />
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-info-circle text-primary me-2"></i>مقدمة</h5>
+                        <p class="text-muted">
+                            نحن ندرك أهمية خصوصية بياناتك. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية المعلومات التي تقدمها عند استخدام نظام إدارة الموارد البشرية.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-database text-primary me-2"></i>المعلومات التي نجمعها</h5>
+                        <ul class="text-muted">
+                            <li>الاسم الكامل والبريد الإلكتروني ورقم الهاتف</li>
+                            <li>البيانات الوظيفية (المنصب، القسم، تاريخ التعيين، الراتب)</li>
+                            <li>سجلات الحضور والانصراف</li>
+                            <li>طلبات الإجازات والموافقات عليها</li>
+                            <li>سجلات تسجيل الدخول والنشاط داخل النظام</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-lock text-primary me-2"></i>كيف نحمي معلوماتك</h5>
+                        <p class="text-muted">
+                            نطبق إجراءات أمنية صارمة لحماية معلوماتك من الوصول غير المصرح به أو التعديل أو الإفصاح. يتم تشفير البيانات الحساسة وتخزينها بشكل آمن.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-share-alt text-primary me-2"></i>مشاركة المعلومات</h5>
+                        <p class="text-muted">
+                            لا نقوم ببيع أو تأجير أو مشاركة معلوماتك الشخصية مع أطراف ثالثة لأغراض تسويقية. قد يتم مشاركة البيانات مع الجهات المختصة فقط عند اقتضاء القانون.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-cookie-bite text-primary me-2"></i>ملفات تعريف الارتباط (Cookies)</h5>
+                        <p class="text-muted">
+                            نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتذكر تفضيلاتك. يمكنك تعطيلها من خلال إعدادات المتصفح الخاص بك.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5><i class="fas fa-envelope text-primary me-2"></i>الاتصال بنا</h5>
+                        <p class="text-muted">
+                            إذا كان لديك أي أسئلة حول سياسة الخصوصية، يرجى التواصل مع إدارة النظام عبر البريد الإلكتروني:
+                            <a href="mailto:admin@hrsystem.com">admin@hrsystem.com</a>
+                        </p>
+                    </div>
+
+                    <hr class="mt-4" />
+
+                    <div class="text-center text-muted small mt-3">
+                        <p>&copy; @DateTime.Now.Year - نظام إدارة الموارد البشرية - جميع الحقوق محفوظة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

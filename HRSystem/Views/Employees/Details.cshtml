@@ -1,66 +1,261 @@
 ﻿@model HRSystem.Models.Employee
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "تفاصيل الموظف";
 }
 
-<h1>Details</h1>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-id-card text-primary"></i> @ViewData["Title"]
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group">
+                <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i> تعديل
+                </a>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right me-1"></i> رجوع إلى القائمة
+                </a>
+            </div>
+        </div>
+    </div>
 
-<div>
-    <h4>Employee</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Position)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Position)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Department)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Department)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HireDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HireDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Salary)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Salary)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-    </dl>
+    <div class="row">
+        <!-- بطاقة المعلومات الشخصية -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle text-primary me-2"></i> المعلومات الشخصية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user fa-3x text-white"></i>
+                        </div>
+                        <h4 class="mt-3 mb-0">@Model.Name</h4>
+                        <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary") mt-1">
+                            @(Model.IsActive ? "نشط" : "غير نشط")
+                        </span>
+                    </div>
+                    <hr />
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">البريد الإلكتروني</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <span>@Model.Email</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">رقم الهاتف</label>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <span>@(Model.Phone ?? "غير مدخل")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة المعلومات الوظيفية -->
+        <div class="col-xl-8 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-briefcase text-primary me-2"></i> المعلومات الوظيفية
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small d-block">المنصب</label>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-tag text-primary me-2"></i>
+                                <span class="fw-semibold">@Model.Position</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small d-block">القسم</label>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-building text-primary me-2"></i>
+                                <span class="fw-semibold">@Model.Department</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small d-block">تاريخ التعيين</label>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                <span>@Model.HireDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small d-block">الراتب الأساسي</label>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-dollar-sign text-primary me-2"></i>
+                                <span class="fw-bold">@Model.Salary.ToString("N0") ريال</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <hr />
+                        <div class="mt-3 p-3 bg-light rounded">
+                            <h6 class="mb-3">
+                                <i class="fas fa-phone-alt text-primary me-2"></i> وسائل التواصل
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-2">
+                                    <a href="tel:@Model.Phone" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-phone me-2"></i> اتصل بـ @Model.Name
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <a href="mailto:@Model.Email" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-envelope me-2"></i> أرسل بريداً إلكترونياً
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- بطاقة سجل الحضور والإجازات -->
+    <div class="row mt-2">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <ul class="nav nav-tabs card-header-tabs" id="employeeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab">
+                                <i class="fas fa-fingerprint me-1"></i> سجل الحضور
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="leaves-tab" data-bs-toggle="tab" data-bs-target="#leaves" type="button" role="tab">
+                                <i class="fas fa-calendar-alt me-1"></i> سجل الإجازات
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="employeeTabsContent">
+                        <!-- تبويب الحضور -->
+                        <div class="tab-pane fade show active" id="attendance" role="tabpanel">
+                            @if (ViewBag.RecentAttendance != null && ((IEnumerable<Attendance>)ViewBag.RecentAttendance).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>التاريخ</th>
+                                                <th>وقت الحضور</th>
+                                                <th>وقت الانصراف</th>
+                                                <th>عدد الساعات</th>
+                                                <th>الحالة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var att in ViewBag.RecentAttendance)
+                                            {
+                                                var hours = "";
+                                                if (att.CheckInTime.HasValue && att.CheckOutTime.HasValue)
+                                                {
+                                                    var diff = att.CheckOutTime.Value - att.CheckInTime.Value;
+                                                    hours = $"{(int)diff.TotalHours}:{diff.Minutes:D2}";
+                                                }
+                                                <tr>
+                                                    <td>@att.Date.ToString("yyyy-MM-dd")</td>
+                                                    <td>@(att.CheckInTime?.ToString("HH:mm") ?? "-")</td>
+                                                    <td>@(att.CheckOutTime?.ToString("HH:mm") ?? "-")</td>
+                                                    <td>@hours</td>
+                                                    <td><span class="badge bg-success">@att.Status</span></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="/Attendance/Report?employeeId=@Model.Id" class="btn btn-sm btn-outline-primary">
+                                        عرض تقرير كامل
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                    <p>لا توجد سجلات حضور لهذا الموظف</p>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- تبويب الإجازات -->
+                        <div class="tab-pane fade" id="leaves" role="tabpanel">
+                            @if (ViewBag.RecentLeaves != null && ((IEnumerable<Leave>)ViewBag.RecentLeaves).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>تاريخ البدء</th>
+                                                <th>تاريخ الانتهاء</th>
+                                                <th>عدد الأيام</th>
+                                                <th>نوع الإجازة</th>
+                                                <th>الحالة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var leave in ViewBag.RecentLeaves)
+                                            {
+                                                var statusClass = leave.Status switch
+                                                {
+                                                    "قيد الانتظار" => "warning",
+                                                    "موافقة" => "success",
+                                                    _ => "danger"
+                                                };
+                                                <tr>
+                                                    <td>@leave.StartDate.ToString("yyyy-MM-dd")</td>
+                                                    <td>@leave.EndDate.ToString("yyyy-MM-dd")</td>
+                                                    <td>@leave.TotalDays</td>
+                                                    <td>@leave.LeaveType</td>
+                                                    <td><span class="badge bg-@statusClass">@leave.Status</span></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <p>لا توجد سجلات إجازات لهذا الموظف</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+@section Scripts {
+    <script>
+        // تفعيل التبويبات
+        var triggerTabList = [].slice.call(document.querySelectorAll('#employeeTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            var tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        })
+    </script>
+}
