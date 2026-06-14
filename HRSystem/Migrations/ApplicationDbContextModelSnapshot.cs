@@ -148,6 +148,9 @@ namespace HRSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Allowances")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Department")
                         .HasColumnType("nvarchar(max)");
 
@@ -157,6 +160,9 @@ namespace HRSystem.Migrations
 
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Incentives")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

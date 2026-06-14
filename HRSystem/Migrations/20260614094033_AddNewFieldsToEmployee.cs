@@ -5,7 +5,7 @@
 namespace HRSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class FixSalaryDefaults : Migration
+    public partial class AddNewFieldsToEmployee : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

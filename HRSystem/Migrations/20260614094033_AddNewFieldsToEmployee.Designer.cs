@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HRSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260608003648_AddEmployeeFields")]
-    partial class AddEmployeeFields
+    [Migration("20260614094033_AddNewFieldsToEmployee")]
+    partial class AddNewFieldsToEmployee
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,6 +151,9 @@ namespace HRSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("Allowances")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Department")
                         .HasColumnType("nvarchar(max)");
 
@@ -160,6 +163,9 @@ namespace HRSystem.Migrations
 
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Incentives")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
