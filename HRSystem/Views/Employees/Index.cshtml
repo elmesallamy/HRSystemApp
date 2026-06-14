@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "الموظفين";
+    var totalSalary = Model.Sum(e => e.Salary);
+    var totalActive = Model.Count(e => e.IsActive);
+    var totalDeductions = Model.Sum(e => e.TotalDeductions);
+    var totalOvertime = Model.Sum(e => e.OvertimeHours);
 }
 
 <div class="container-fluid">
@@ -16,51 +20,130 @@
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-white py-3">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h5 class="mb-0">
-                        <i class="fas fa-list me-2 text-primary"></i> قائمة الموظفين
-                    </h5>
-                </div>
-                <div class="col-auto">
-                    <div class="input-group">
-                        <input type="text" id="searchInput" class="form-control" placeholder="بحث..." aria-label="بحث">
-                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
+    <!-- بطاقات الإحصائيات -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">إجمالي الموظفين</h6>
+                    <h2 class="mb-0">@Model.Count()</h2>
                 </div>
             </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">موظفين نشطين</h6>
+                    <h2 class="mb-0">@totalActive</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">إجمالي الرواتب</h6>
+                    <h2 class="mb-0">@totalSalary.ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">إجمالي الخصومات</h6>
+                    <h2 class="mb-0">@totalDeductions.ToString("N0")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلتر البحث -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i> فلترة الموظفين</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">بحث بالاسم أو البريد أو الهاتف</label>
+                    <input type="text" name="searchTerm" class="form-control" placeholder="أدخل نص البحث..." value="@ViewBag.SearchTerm" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">فلتر بالقسم</label>
+                    <select name="department" class="form-select">
+                        <option value="">كل الأقسام</option>
+                        @foreach (var dept in ViewBag.Departments)
+                        {
+                            if (ViewBag.SelectedDepartment == dept)
+                            {
+                                <option value="@dept" selected>@dept</option>
+                            }
+                            else
+                            {
+                                <option value="@dept">@dept</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i> بحث
+                    </button>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a asp-action="Index" class="btn btn-secondary w-100">
+                        <i class="fas fa-sync-alt me-1"></i> عرض الكل
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- جدول الموظفين -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> قائمة الموظفين</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped mb-0" id="employeesTable">
                     <thead class="table-light">
                         <tr>
-                            <th>@Html.DisplayNameFor(model => model.Name)</th>
-                            <th>@Html.DisplayNameFor(model => model.Email)</th>
-                            <th>@Html.DisplayNameFor(model => model.Phone)</th>
-                            <th>@Html.DisplayNameFor(model => model.Position)</th>
-                            <th>@Html.DisplayNameFor(model => model.Department)</th>
-                            <th>@Html.DisplayNameFor(model => model.HireDate)</th>
-                            <th>@Html.DisplayNameFor(model => model.Salary)</th>
-                            <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                            <th>#</th>
+                            <th>الاسم كاملاً</th>
+                            <th>رقم الهاتف</th>
+                            <th>المنصب</th>
+                            <th>القسم</th>
+                            <th>تاريخ التعيين</th>
+                            <th>الراتب الأساسي</th>
+                            <th>البدلات</th>
+                            <th>الحوافز</th>
+                            <th>ساعات الإضافي</th>
+                            <th>الخصومات</th>
+                            <th>الصافي</th>
+                            <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @{
+                            int counter = 1;
+                        }
                         @foreach (var item in Model)
                         {
+                            var netSalary = item.Salary + item.Allowances + item.Incentives - item.TotalDeductions;
                             <tr>
-                                <td class="align-middle">@Html.DisplayFor(modelItem => item.Name)</td>
-                                <td class="align-middle">@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td class="align-middle">@Html.DisplayFor(modelItem => item.Phone)</td>
-                                <td class="align-middle">@Html.DisplayFor(modelItem => item.Position)</td>
-                                <td class="align-middle">@Html.DisplayFor(modelItem => item.Department)</td>
-                                <td class="align-middle">@item.HireDate.ToString("yyyy-MM-dd")</td>
-                                <td class="align-middle">@item.Salary.ToString("C0")</td>
+                                <td class="align-middle">@counter</td>
+                                <td class="align-middle fw-semibold">@item.Name</td>
+                                <td class="align-middle">@(item.Phone ?? "-")</td>
+                                <td class="align-middle">@(item.Position ?? "-")</td>
+                                <td class="align-middle">@(item.Department ?? "-")</td>
+                                <td class="align-middle">@item.HireDate.ToString("yyyy-MM-dd")</td> 
+                                <td class="align-middle text-primary fw-bold">@item.Salary.ToString("N0")</td>
+                                <td class="align-middle text-success">@item.Allowances.ToString("N0")</td>
+                                <td class="align-middle text-warning">@item.Incentives.ToString("N0")</td>
+                                <td class="align-middle text-info">@item.OvertimeHours.ToString("N1")</td>
+                                <td class="align-middle text-danger">@item.TotalDeductions.ToString("N0")</td>
+                                <td class="align-middle fw-bold">@netSalary.ToString("N0")</td> 
                                 <td class="align-middle">
                                     @if (item.IsActive)
                                     {
@@ -70,36 +153,48 @@
                                     {
                                         <span class="badge bg-secondary">غير نشط</span>
                                     }
-                                </td>
+                                </td>   
                                 <td class="align-middle">
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <div class="btn-group btn-group-sm">
                                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" title="تعديل">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="تفاصيل">
-                                            <i class="fas fa-info-circle"></i>
+                                            <i class="fas fa-eye"></i>
                                         </a>
                                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger" title="حذف">
                                             <i class="fas fa-trash-alt"></i>
                                         </a>
                                     </div>
-                                </td>
+                                    </td>
                             </tr>
+                            counter++;
                         }
                     </tbody>
                 </table>
+                @if (!Model.Any())
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>لا توجد بيانات للعرض</p>
+                    </div>
+                }
             </div>
         </div>
         <div class="card-footer bg-white">
-            <div class="row align-items-center">
-                <div class="col">
+            <div class="row">
+                <div class="col-md-6">
                     <small class="text-muted">
-                        <i class="fas fa-chart-simple me-1"></i> إجمالي الموظفين: <strong>@Model.Count()</strong>
+                        <i class="fas fa-chart-line me-1"></i> 
+                        إجمالي الرواتب: <strong>@totalSalary.ToString("N0")</strong> ريال
+                        | إجمالي الخصومات: <strong>@totalDeductions.ToString("N0")</strong> ريال
+                        | إجمالي ساعات الإضافي: <strong>@totalOvertime.ToString("N1")</strong> ساعة
                     </small>
                 </div>
-                <div class="col-auto">
+                <div class="col-md-6 text-md-end">
                     <small class="text-muted">
-                        <i class="fas fa-calendar-week me-1"></i> آخر تحديث: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                        <i class="fas fa-calendar me-1"></i> 
+                        آخر تحديث: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
                     </small>
                 </div>
             </div>
@@ -109,32 +204,15 @@
 
 @section Scripts {
     <script>
-        // وظيفة البحث البسيطة (لا تحتاج مكتبات خارجية)
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            var input = document.getElementById('searchInput');
-            var filter = input.value.toUpperCase();
+        // تصدير إلى Excel
+        function exportToExcel() {
             var table = document.getElementById('employeesTable');
-            var tr = table.getElementsByTagName('tr');
-
-            for (var i = 1; i < tr.length; i++) {
-                var tdArray = tr[i].getElementsByTagName('td');
-                var found = false;
-                for (var j = 0; j < tdArray.length - 1; j++) { // -1 لتجاهل عمود الإجراءات
-                    var txtValue = tdArray[j].textContent || tdArray[j].innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        found = true;
-                        break;
-                    }
-                }
-                tr[i].style.display = found ? '' : 'none';
-            }
-        });
-
-        // دعم زر Enter في مربع البحث
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('searchBtn').click();
-            }
-        });
+            var html = table.outerHTML;
+            var url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'الموظفين.xls';
+            link.click();
+        }
     </script>
 }

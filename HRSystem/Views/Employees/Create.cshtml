@@ -11,7 +11,7 @@
         </h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <a asp-action="Index" class="btn btn-secondary">
-                <i class="fas fa-arrow-right me-1"></i> رجوع إلى القائمة
+                <i class="fas fa-arrow-right me-1"></i> رجوع
             </a>
         </div>
     </div>
@@ -20,30 +20,21 @@
         <div class="col-md-8">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-address-card text-primary me-2"></i> بيانات الموظف الجديد
-                    </h5>
+                    <h5 class="mb-0"><i class="fas fa-address-card text-primary me-2"></i> بيانات الموظف الجديد</h5>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Name" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                    <input asp-for="Name" class="form-control" placeholder="أدخل الاسم كاملاً" />
-                                </div>
+                                <input asp-for="Name" class="form-control" />
                                 <span asp-validation-for="Name" class="text-danger small"></span>
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Email" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input asp-for="Email" class="form-control" placeholder="example@domain.com" />
-                                </div>
+                                <input asp-for="Email" class="form-control" />
                                 <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
                         </div>
@@ -51,19 +42,12 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Phone" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                    <input asp-for="Phone" class="form-control" placeholder="رقم الهاتف" />
-                                </div>
+                                <input asp-for="Phone" class="form-control" />
                                 <span asp-validation-for="Phone" class="text-danger small"></span>
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Position" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
-                                    <input asp-for="Position" class="form-control" placeholder="المنصب الوظيفي" />
-                                </div>
+                                <input asp-for="Position" class="form-control" />
                                 <span asp-validation-for="Position" class="text-danger small"></span>
                             </div>
                         </div>
@@ -71,43 +55,42 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="Department" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
-                                    <input asp-for="Department" class="form-control" placeholder="القسم" />
-                                </div>
+                                <input asp-for="Department" class="form-control" />
                                 <span asp-validation-for="Department" class="text-danger small"></span>
                             </div>
-
                             <div class="col-md-6 mb-3">
                                 <label asp-for="HireDate" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                    <input asp-for="HireDate" class="form-control" type="date" />
-                                </div>
+                                <input asp-for="HireDate" class="form-control" type="date" />
                                 <span asp-validation-for="HireDate" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label asp-for="Salary" class="form-label fw-semibold"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                                    <input asp-for="Salary" class="form-control" placeholder="الراتب الأساسي" />
-                                </div>
+                                <input asp-for="Salary" class="form-control" />
                                 <span asp-validation-for="Salary" class="text-danger small"></span>
                             </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Allowances" class="form-label fw-semibold">البدلات</label>
+                                <input asp-for="Allowances" class="form-control" />
+                                <span asp-validation-for="Allowances" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Incentives" class="form-label fw-semibold">الحوافز</label>
+                                <input asp-for="Incentives" class="form-control" />
+                                <span asp-validation-for="Incentives" class="text-danger small"></span>
+                            </div>
+                        </div>
 
-                            <div class="col-md-6 mb-3 d-flex align-items-center">
-                                <div class="form-check form-switch mt-4">
-                                    <input class="form-check-input" asp-for="IsActive" />
-                                    <label class="form-check-label fw-semibold" asp-for="IsActive"></label>
-                                </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" asp-for="IsActive" />
+                                <label class="form-check-label fw-semibold" asp-for="IsActive"></label>
                             </div>
                         </div>
 
                         <hr />
-
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-primary px-4">
                                 <i class="fas fa-save me-1"></i> حفظ
